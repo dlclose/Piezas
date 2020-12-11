@@ -21,7 +21,15 @@
  * specifies it is X's turn first
 **/
 Piezas::Piezas()
-{
+{   
+    board.resize(3);
+    for(int i = 0; i < 3; i++){
+        board[i].resize(4);
+        for (int j = 0; j < 4; j++){
+            board[i][j] = Blank;
+        }
+    }
+    turn = X;
 }
 
 /**
@@ -30,6 +38,11 @@ Piezas::Piezas()
 **/
 void Piezas::reset()
 {
+    for(int i = 0; i < (int)board.size(); i++){
+        for (int j = 0; j < (int)board[i].size(); j++){
+            board[i][j] = Blank;
+        }
+    }
 }
 
 /**
@@ -42,6 +55,17 @@ void Piezas::reset()
 **/ 
 Piece Piezas::dropPiece(int column)
 {
+    if(column < 0 || column >= (int)board[0].size()){
+        return Invalid;
+    }
+    Piece placedPiece = turn;
+    turn = (turn == X) ? O : X;
+    for(int i = 0; i < 3; i++){
+        if(board[i][column] == Blank){
+            board[i][column] = placedPiece;
+            return placedPiece;
+        }
+    }
     return Blank;
 }
 
@@ -51,7 +75,10 @@ Piece Piezas::dropPiece(int column)
 **/
 Piece Piezas::pieceAt(int row, int column)
 {
-    return Blank;
+    if(row < 0 || column < 0 || row >= (int)board.size() || column >= (int)board[row].size()){
+        return Invalid;
+    }
+    return board[row][column];
 }
 
 /**
@@ -65,5 +92,54 @@ Piece Piezas::pieceAt(int row, int column)
 **/
 Piece Piezas::gameState()
 {
-    return Blank;
+    int max_X = 0;
+    int current_X = 0;
+    int max_Y = 0;
+    int current_Y = 0;
+    Piece prev = board[0][0];
+    for(int i = 0; i < 3; i++){
+        prev = board[i][0];
+        for(int j = 0; j < 4; j++){
+            if(board[i][j] == Blank)
+                return Invalid;
+            if(prev == board[i][j]){
+                if(board[i][j] == X){
+                    current_X++;
+                    max_X = (max_X > current_X) ? max_X : current_X;
+                }
+                else{
+                    current_Y++;
+                    max_Y = (max_Y > current_Y) ? max_Y : current_Y;
+                }
+            }
+            else{
+                current_Y = 0;
+                current_X = 0;
+            }
+        }
+    }
+    for(int j = 0; j < 4; j++){
+        prev = board[0][j];
+        for(int i = 0; i < 3; i++){
+            if(board[i][j] == Blank)
+                return Invalid;
+            if(prev == board[i][j]){
+                if(board[i][j] == X){
+                    current_X++;
+                    max_X = (max_X > current_X) ? max_X : current_X;
+                }
+                else{
+                    current_Y++;
+                    max_Y = (max_Y > current_Y) ? max_Y : current_Y;
+                }
+            }
+            else{
+                current_Y = 0;
+                current_X = 0;
+            }
+        }
+    }
+    if(max_X == max_Y)
+        return Blank;
+    return (max_X > max_Y) ? X : O;
 }
